@@ -1,0 +1,57 @@
+<div id="dashboard">
+    <section>
+        <h2>Keywords</h2>
+        <form method="post" action="{{ url_for('create_keyword') }}"
+              hx-post="{{ url_for('create_keyword') }}" hx-target="#dashboard" hx-swap="outerHTML"
+              hx-disabled-elt="find button">
+            <label for="keyword">Keyword or phrase</label>
+            <div class="form-row">
+                <input id="keyword" name="keyword" required maxlength="100" placeholder="e.g. Python">
+                <button type="submit">Add keyword</button>
+            </div>
+        </form>
+        {% if feedback %}<p role="status">{{ feedback }}</p>{% endif %}
+        {% if keywords %}
+        <ul class="keywords">
+            {% for keyword in keywords %}<li>{{ keyword.term }}</li>{% endfor %}
+        </ul>
+        {% else %}
+        <p>Add a keyword to start monitoring.</p>
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>Feeds</h2>
+        <ul>
+            {% for feed in feeds %}<li><a href="{{ feed.url }}">{{ feed.name }}</a></li>{% endfor %}
+        </ul>
+        <form method="post" action="{{ url_for('scan_feeds') }}"
+              hx-post="{{ url_for('scan_feeds') }}" hx-target="#dashboard" hx-swap="outerHTML"
+              hx-disabled-elt="find button">
+            <button type="submit"{% if not keywords %} disabled{% endif %}>Scan now</button>
+            <span class="htmx-indicator" role="status">Scanning…</span>
+        </form>
+        {% if scan_result %}
+        <p role="status">Last scan found {{ scan_result.added }} new {{ 'match' if scan_result.added == 1 else 'matches' }}.</p>
+        {% if scan_result.failed_feeds %}
+        <p>Could not read {{ scan_result.failed_feeds | join(', ') }}. Try again later.</p>
+        {% endif %}
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>Recent matches</h2>
+        {% if matches %}
+        <ul class="matches">
+            {% for match, keyword in matches %}
+            <li>
+                <a href="{{ match.url }}" rel="noreferrer">{{ match.title }}</a>
+                <small>{{ match.source }} · {{ keyword }}</small>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No matches yet.</p>
+        {% endif %}
+    </section>
+</div>
